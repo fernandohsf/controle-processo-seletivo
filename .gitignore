@@ -1,0 +1,8 @@
+# PASTAS
+__pycache__
+Arquivos úteis
+build
+
+#ARQUIVOS
+.env
+credenciais_google.json
