@@ -34,18 +34,18 @@ def enviar_email(destinatario, assunto, corpo):
         messagebox.showwarning("Aviso", f"Erro ao enviar email para {destinatario}: {e}")
         return False
 
-def enviar_emails(api):
-    ids_arquivos_selecionados = list(api.arquivos_selecionados)
+def enviar_emails(app):
+    ids_arquivos_selecionados = list(app.arquivos_selecionados)
     
     if not ids_arquivos_selecionados:
         messagebox.showwarning("Aviso", "Nenhuma planilha selecionada.")
         return
     
     try:
-        api.botao_enviar_emails.config(state="disabled")
+        app.botao_enviar_emails.config(state="disabled")
         for arquivo_id in ids_arquivos_selecionados:
             try:
-                planilha = api.cliente_gspread.open_by_key(arquivo_id)
+                planilha = app.cliente_gspread.open_by_key(arquivo_id)
                 sheet = planilha.sheet1
                 dados = sheet.get_all_values()
                 
@@ -97,7 +97,7 @@ def enviar_emails(api):
                     assunto = "Retorno do processo seletivo"
 
                 for email, mensagem, linha in emails_para_enviar:
-                    api.adicionar_mensagem(f"⏩ Enviando e-mail para {email}...")
+                    app.adicionar_mensagem(f"⏩ Enviando e-mail para {email}...")
                     if enviar_email(email, assunto, mensagem):
                         linhas_para_atualizar.append(linha)
                 
@@ -112,10 +112,10 @@ def enviar_emails(api):
                     ]
                     sheet.batch_update(atualizacoes)
                 
-                api.adicionar_mensagem(f"✅ Todos os emails da planilha {planilha.title} foram enviados.")
+                app.adicionar_mensagem(f"✅ Todos os emails da planilha {planilha.title} foram enviados.")
 
                 messagebox.showwarning("Aviso", f"Todos os emails da planilha {planilha.title} foram enviados.")
-                api.listar_arquivos_drive()
+                app.listar_arquivos_drive()
                 
             except Exception as e:
                 messagebox.showwarning("Aviso", f"Erro ao processar a planilha {arquivo_id}: {e}\n Se o erro persistir, contate a UNIAE.")
@@ -124,4 +124,4 @@ def enviar_emails(api):
     except Exception as e:
         messagebox.showwarning("Aviso", f"Erro inesperado: {e}\n Se o erro persistir, contate a UNIAE.")
     
-    api.botao_enviar_emails.config(state="normal")
+    app.botao_enviar_emails.config(state="normal")
