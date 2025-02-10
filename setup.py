@@ -5,8 +5,7 @@ caminhoExe = os.path.dirname(os.path.realpath(__file__))
 
 build_exe_options = {
     "packages": [
-        "os", "sys", "re", "google_connection", "google_sheets", "gspread", "googleapiclient",
-        "smtplib", "ssl", "tkinter", "PIL", "email", "dotenv", "webbrowser", "concurrent.futures"
+        "os", "sys", "re", "gspread", "googleapiclient", "smtplib", "ssl", "tkinter", "PIL", "email", "dotenv", "webbrowser"
     ],
     "include_files": [
         f"{caminhoExe}/imagens",
@@ -21,5 +20,5 @@ setup(
     version="1.0",
     description="GPSI FAPEC.",
     options={"build_exe": build_exe_options},
-    executables=[Executable("index.py", base="Win32GUI", target_name="GPSI")],
+    executables=[Executable("index.py", base="Win32GUI", target_name="GPSI", icon=f"{caminhoExe}/imagens/Nexus.ico", copyright="© 2025 Fernando Henrique da Silva Ferreira - Todos os direitos reservados.")],
 )

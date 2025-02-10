@@ -80,10 +80,10 @@ class App:
         botao_enviar_emails_ativo = ImageTk.PhotoImage(botao_enviar_emails_ativo)
         
         self.botao_enviar_emails = tk.Button(self.frame_botoes, image=botao_enviar_emails_normal,
-                                             bg=self.azul_escuro, activebackground=self.azul_escuro,
-                                             relief="flat", bd=0,
-                                             command=lambda: enviar_emails(self),
-                                             state="disabled")
+                                            bg=self.azul_escuro, activebackground=self.azul_escuro,
+                                            relief="flat", bd=0,
+                                            command=lambda: enviar_emails(self),
+                                            state="disabled")
         self.botao_enviar_emails.image = botao_enviar_emails_normal
         self.botao_enviar_emails.bind("<Enter>", lambda e: self.botao_enviar_emails.config(image=botao_enviar_emails_ativo))
         self.botao_enviar_emails.bind("<Leave>", lambda e: self.botao_enviar_emails.config(image=botao_enviar_emails_normal))
@@ -98,18 +98,18 @@ class App:
         self.frame_cabecalho.pack(fill=tk.X)
 
         tk.Label(self.frame_cabecalho, text="Selecionar", font=(self.fonte, self.tamanho_fonte_cabecalho, "bold"),
-            bg=self.azul_claro, fg=self.branco, width=self.larguras[0], anchor="w").pack(side=tk.LEFT, pady=2)
+                bg=self.azul_claro, fg=self.branco, width=self.larguras[0], anchor="w").pack(side=tk.LEFT, pady=2)
 
         self.label_nome = tk.Label(self.frame_cabecalho, text="Nome do Arquivo", font=(self.fonte, self.tamanho_fonte_cabecalho, "bold"),
-            bg=self.azul_claro, fg=self.branco, width=self.larguras[1], anchor="w", cursor=self.cursor)
+                                    bg=self.azul_claro, fg=self.branco, width=self.larguras[1], anchor="w", cursor=self.cursor)
         self.label_nome.pack(side=tk.LEFT, pady=2)
         self.label_nome.bind("<Button-1>", lambda e: self.sort_by("nome"))
 
         tk.Label(self.frame_cabecalho, text="Abrir", font=(self.fonte, self.tamanho_fonte_cabecalho, "bold"),
-            bg=self.azul_claro, fg=self.branco, width=self.larguras[3], anchor="w").pack(side=tk.RIGHT, pady=2)
+                bg=self.azul_claro, fg=self.branco, width=self.larguras[3], anchor="w").pack(side=tk.RIGHT, pady=2)
         
         self.label_data = tk.Label(self.frame_cabecalho, text="Data de modificação", font=(self.fonte, self.tamanho_fonte_cabecalho, "bold"),
-                                bg=self.azul_claro, fg=self.branco, width=self.larguras[2], anchor="w", cursor=self.cursor)
+                                    bg=self.azul_claro, fg=self.branco, width=self.larguras[2], anchor="w", cursor=self.cursor)
         self.label_data.pack(side=tk.RIGHT, pady=2)
         self.label_data.bind("<Button-1>", lambda e: self.sort_by("data"))
 
