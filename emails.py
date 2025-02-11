@@ -6,7 +6,7 @@ from tkinter import messagebox
 from dotenv import load_dotenv
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-
+from google_drive import listar_arquivos_drive
 from mensagens import mensagens
 
 def enviar_email(destinatario, assunto, corpo):
@@ -21,14 +21,13 @@ def enviar_email(destinatario, assunto, corpo):
     mensagem['From'] = remetente
     mensagem['To'] = destinatario
     mensagem['Subject'] = assunto
-    mensagem.attach(MIMEText(corpo, 'plain'))
+    mensagem.attach(MIMEText(corpo, 'html'))
 
     try:
         with smtplib.SMTP('smtp.gmail.com', 587) as servidor:
             servidor.starttls()
             servidor.login(remetente, senha)
-            texto = mensagem.as_string()
-            servidor.sendmail(remetente, destinatario, texto)
+            servidor.sendmail(remetente, destinatario, mensagem.as_string())
         return True
     except Exception as e:
         messagebox.showwarning("Aviso", f"Erro ao enviar email para {destinatario}: {e}")
@@ -55,12 +54,15 @@ def enviar_emails(app):
                 
                 # Mapear colunas necessárias pelos índices
                 col_map = {
-                    20: 19,  # Coluna T (índice 19)
-                    19: 18,  # Coluna S (índice 18)
-                    18: 17,  # Coluna R (índice 17)
-                    5: 4,    # Coluna E (índice 4)
-                    3: 2,    # Coluna C (índice 2)
-                    1: 0,    # Coluna A (índice 0)
+                    26: 25, # Coluna Z (índice 25) Controle de e-mail
+                    25: 24, # Coluna Y (índice 24) Motivo de Inaptidão/Eliminação
+                    24: 23, # Coluna X (índice 23) Status da inscrição
+                    23: 22, # Coluna W (índice 22) Analista RH
+                    7: 6,   # Coluna G (índice 6) Nome Completo
+                    6: 5,   # Coluna F (índice 5) Vaga
+                    5: 4,   # Coluna E (índice 4) Número do Processo Seletivo
+                    3: 2,   # Coluna C (índice 2) Endereço de e-mail
+                    1: 0,   # Coluna A (índice 0) Número da Inscrição
                 }
                 
                 emails_para_enviar = []
@@ -68,10 +70,13 @@ def enviar_emails(app):
                 
                 # Processar as linhas
                 for i, linha in enumerate(dados[1:], start=2):
-                    if linha[col_map[20]].strip().lower() == "enviar":
-                        status = linha[col_map[18]].strip().lower()
+                    if linha[col_map[26]].strip().lower() == "enviar":
+                        status = linha[col_map[24]].strip().lower()
                         
                         mensagem = mensagens(status, linha, col_map)
+
+                        if not mensagem:
+                            continue
                         
                         destinatario = linha[col_map[3]]
                         
@@ -85,16 +90,7 @@ def enviar_emails(app):
                     messagebox.showwarning("Aviso", "Nenhum email qualificado para envio.")
                     continue
                 
-                # Extrair números do nome da planilha para o assunto
-                numeros_no_nome = re.findall(r'\d+', planilha.title)
-                if numeros_no_nome:
-                    ultimo_numero = numeros_no_nome[-1]
-                    if len(ultimo_numero) >= 4:
-                        ultimo_numero = ultimo_numero[:-4] + '/' + ultimo_numero[-4:]
-                    numeros_no_nome[-1] = ultimo_numero
-                    assunto = f"Retorno do processo seletivo {''.join(numeros_no_nome)}"
-                else:
-                    assunto = "Retorno do processo seletivo"
+                assunto = f"Retorno do processo seletivo {linha[col_map[5]]}"
 
                 for email, mensagem, linha in emails_para_enviar:
                     app.adicionar_mensagem(f"⏩ Enviando e-mail para {email}...")
@@ -105,7 +101,7 @@ def enviar_emails(app):
                 if linhas_para_atualizar:
                     atualizacoes = [
                         {
-                            "range": f"T{linha}",
+                            "range": f"Z{linha}",
                             "values": [["Enviado"]]
                         }
                         for linha in linhas_para_atualizar
@@ -115,7 +111,7 @@ def enviar_emails(app):
                 app.adicionar_mensagem(f"✅ Todos os emails da planilha {planilha.title} foram enviados.")
 
                 messagebox.showwarning("Aviso", f"Todos os emails da planilha {planilha.title} foram enviados.")
-                app.listar_arquivos_drive()
+                listar_arquivos_drive(app)
                 
             except Exception as e:
                 messagebox.showwarning("Aviso", f"Erro ao processar a planilha {arquivo_id}: {e}\n Se o erro persistir, contate a UNIAE.")
