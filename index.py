@@ -17,8 +17,8 @@ class App:
         self.tamanho_fonte_cabecalho = 13
         self.tamanho_fonte_corpo = 11
         self.cursor = "hand2"
-        # LARGURAS COLUNAS: SELECIONAR, NOME, DATA, ABRIR
-        self.larguras = [10, 40, 18, 8]
+        # LARGURAS COLUNAS: SELECIONAR, NOME, DATA, ABRIR, DOWNLOAD
+        self.larguras = [10, 40, 18, 6, 8]
 
         self.pasta_id_drive = "1pTddHNebIu5Z77Y24xqpe1zug-GLTz8c"
         self.arquivos_planilhas =[]
@@ -98,19 +98,22 @@ class App:
         self.frame_cabecalho.pack(fill=tk.X)
 
         tk.Label(self.frame_cabecalho, text="Selecionar", font=(self.fonte, self.tamanho_fonte_cabecalho, "bold"),
-                bg=self.azul_claro, fg=self.branco, width=self.larguras[0], anchor="w").pack(side=tk.LEFT, pady=2)
+                bg=self.azul_claro, fg=self.branco, width=self.larguras[0], anchor="w").pack(side=tk.LEFT)
 
         self.label_nome = tk.Label(self.frame_cabecalho, text="Nome do Arquivo", font=(self.fonte, self.tamanho_fonte_cabecalho, "bold"),
                                     bg=self.azul_claro, fg=self.branco, width=self.larguras[1], anchor="w", cursor=self.cursor)
-        self.label_nome.pack(side=tk.LEFT, pady=2)
+        self.label_nome.pack(side=tk.LEFT)
         self.label_nome.bind("<Button-1>", lambda e: self.sort_by("nome"))
 
+        tk.Label(self.frame_cabecalho, text="Download", font=(self.fonte, self.tamanho_fonte_cabecalho, "bold"),
+                bg=self.azul_claro, fg=self.branco, width=self.larguras[4], anchor="w").pack(side=tk.RIGHT, padx=(0, 15))
+
         tk.Label(self.frame_cabecalho, text="Abrir", font=(self.fonte, self.tamanho_fonte_cabecalho, "bold"),
-                bg=self.azul_claro, fg=self.branco, width=self.larguras[3], anchor="w").pack(side=tk.RIGHT, pady=2)
+                bg=self.azul_claro, fg=self.branco, width=self.larguras[3], anchor="w").pack(side=tk.RIGHT)
         
         self.label_data = tk.Label(self.frame_cabecalho, text="Data de modificação", font=(self.fonte, self.tamanho_fonte_cabecalho, "bold"),
                                     bg=self.azul_claro, fg=self.branco, width=self.larguras[2], anchor="w", cursor=self.cursor)
-        self.label_data.pack(side=tk.RIGHT, pady=2)
+        self.label_data.pack(side=tk.RIGHT)
         self.label_data.bind("<Button-1>", lambda e: self.sort_by("data"))
 
         # CANVAS E SCROLLBAR PARA FRAME LISTAGEM
@@ -163,6 +166,10 @@ class App:
             def abrir_planilha(arquivo_id=arquivo_id):
                 url = f"https://docs.google.com/spreadsheets/d/{arquivo_id}"
                 os.system('start "" "{}"'.format(url))
+            
+            def donwload_planilha(arquivo_id=arquivo_id):
+                url = f"https://docs.google.com/spreadsheets/d/{arquivo_id}/export?format=xlsx"
+                os.system('start "" "{}"'.format(url))
 
             # FRAME DE ITENS DA LISTA
             frame_item = tk.Frame(self.canvas, bg=self.branco)
@@ -180,18 +187,26 @@ class App:
             label_nome_arquivo.pack(side=tk.LEFT, fill=tk.X, padx=2)
             label_nome_arquivo.bind("<Button-1>", lambda event, var=var: (var.set(not var.get()),atualizar_lista_selecionados(arquivo_id, var)))
 
-            # BOTÃO ABRIR PANILHA (COLOCADO EM ORDEM INVERTIDA POR ESTAR USANDO SIDE=RIGHT)
+            # BOTÃO DOWNLOAD E ABRIR PANILHA (COLOCADO EM ORDEM INVERTIDA POR ESTAR USANDO SIDE=RIGHT)
+            botao_download_img = Image.open(f'{self.caminhoImagens}/download.png').resize((26, 26))
+            botao_download_img = ImageTk.PhotoImage(botao_download_img)
+            botao_download = tk.Button(frame_item, image=botao_download_img,
+                                    bg=self.branco, bd=0, activebackground=self.branco,
+                                    command=lambda arquivo_id=arquivo_id: donwload_planilha(arquivo_id), cursor=self.cursor)
+            botao_download.image = botao_download_img
+            botao_download.pack(side=tk.RIGHT, padx=(0, 25))
+
             botao_abrir_img = Image.open(f'{self.caminhoImagens}/abrir.png').resize((39, 26))
             botao_abrir_img = ImageTk.PhotoImage(botao_abrir_img)
             botao_abrir = tk.Button(frame_item, image=botao_abrir_img,
                                     bg=self.branco, bd=0, activebackground=self.branco,
                                     command=lambda arquivo_id=arquivo_id: abrir_planilha(arquivo_id), cursor=self.cursor)
             botao_abrir.image = botao_abrir_img
-            botao_abrir.pack(side=tk.RIGHT, padx=20)
+            botao_abrir.pack(side=tk.RIGHT, padx=(0, 48))
 
             tk.Label(frame_item, text=data_modificacao,
                     font=(self.fonte, self.tamanho_fonte_corpo),
-                    bg=self.branco, fg=self.azul_escuro, width=self.larguras[2], anchor="w").pack(side=tk.RIGHT)
+                    bg=self.branco, fg=self.azul_escuro, width=self.larguras[2], anchor="w").pack(side=tk.RIGHT, padx=(0, 20))
 
             # LINHA DE SEPARAÇÃO
             if idx < len(self.arquivos_planilhas) - 1:
