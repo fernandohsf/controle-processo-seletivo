@@ -106,7 +106,7 @@ def enviar_emails(app):
                         }
                         for linha in linhas_para_atualizar
                     ]
-                    sheet.batch_update(atualizacoes)
+                    #sheet.batch_update(atualizacoes)
                 
                 app.adicionar_mensagem(f"✅ Todos os emails da planilha {planilha.title} foram enviados.")
 

@@ -16,14 +16,16 @@ def mensagens(status, linha, col_map):
         return mensagem
     
     elif status == "inapto":
+        motivos = linha[col_map[25]].split("\n")
+        motivos = "<ul>" + "".join(f"<li>{motivo}</li>" for motivo in motivos) + "</ul>"
         mensagem = f"""
             <p>Prezado(a) <b>{linha[col_map[7]]}</b>,</p>
 
             <p>Informamos que sua inscrição para o Processo Seletivo Simplificado {linha[col_map[5]]}, referente à vaga de {linha[col_map[6]]} não foi aprovada por não atendimento e consequente descumprimento do(s) seguinte(s) itens obrigatórios do Edital:<br>
-            {linha[col_map[25]]}.<br>
+            {motivos}.<br>
             Você poderá concorrer em novas oportunidades, desde que cumpra todas as condições estabelecidas pelo instrumento de concorrência para a vaga pleiteada, num novo processo.<br>
             Para este processo de seleção, seu CPF já foi analisado e, portanto, novas inscrições serão automaticamente invalidadas, conforme o Edital.<br>
-            Acompanhe novas oportunidades de trabalho que são regularmente publicadas em nosso portal www.fundacaofapec.org.br.</p>
+            Acompanhe novas oportunidades de trabalho que são regularmente publicadas em nosso <a href="www.fundacaofapec.org.br" alt="Clique para abrir o portal da fundação FAPEC.">Portal Fundação FAPEC</a>.</p>
 
             <p>Atenciosamente,<br>
             {linha[col_map[23]]}<br>
@@ -69,7 +71,7 @@ def mensagens(status, linha, col_map):
 
             <p>Informamos que a sua classificação ficou fora do número de vagas abertas no momento para o Processo Seletivo Simplificado {linha[col_map[5]]}, para a vaga de {linha[col_map[6]]}, assim durante o prazo de 3 meses você ficará no cadastro reserva.<br>
             Isso significa que se houver vacância neste processo seletivo, dentro do período de 3 meses, você poderá vir a ser chamado. Ressaltamos que, em respeito à LGPD e visando preservar os dados dos concorrentes desta seleção, cada candidato será identificado por meio de seu número de inscrição.<br>
-            O Edital de classificação encontra-se disponibilizado no seguinte link: <a href="https://fundacaofapec.org.br/concurso/id/202/?processo-seletivo-interno.html">Processos Seletivos Fundação FAPEC</a>.</p>
+            Acompanhe o andamento do processo seletivo clicando em <a href="https://fundacaofapec.org.br/concurso/id/202/?processo-seletivo-interno.html">Processos Seletivos Fundação FAPEC</a>.</p>
 
             <p>Atenciosamente,<br>
             {linha[col_map[23]]}<br>

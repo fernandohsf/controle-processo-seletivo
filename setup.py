@@ -20,5 +20,5 @@ setup(
     version="1.0",
     description="GPSI FAPEC.",
     options={"build_exe": build_exe_options},
-    executables=[Executable("index.py", base="Win32GUI", target_name="GPSI", icon=f"{caminhoExe}/imagens/Nexus.ico", copyright="© 2025 Fundação FAPEC - Todos os direitos reservados.")],
+    executables=[Executable("index.py", base="Win32GUI", target_name="GPSI", icon=f"{caminhoExe}/imagens/Nexus.ico")],
 )
