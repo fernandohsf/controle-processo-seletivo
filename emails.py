@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import smtplib
+import threading
 from tkinter import messagebox
 from dotenv import load_dotenv
 from email.mime.text import MIMEText
@@ -33,7 +34,7 @@ def enviar_email(destinatario, assunto, corpo):
         messagebox.showwarning("Aviso", f"Erro ao enviar email para {destinatario}: {e}")
         return False
 
-def enviar_emails(app):
+def tarefa_envio(app):
     ids_arquivos_selecionados = list(app.arquivos_selecionados)
     
     if not ids_arquivos_selecionados:
@@ -52,7 +53,7 @@ def enviar_emails(app):
                     messagebox.showwarning("Aviso", "A planilha está vazia.")
                     continue
                 
-                # Mapear colunas necessárias pelos índices
+                # MAPEAMENTO DE COLUNAS POR ÍNDICES
                 col_map = {
                     26: 25, # Coluna Z (índice 25) Controle de e-mail
                     25: 24, # Coluna Y (índice 24) Motivo de Inaptidão/Eliminação
@@ -68,7 +69,9 @@ def enviar_emails(app):
                 emails_para_enviar = []
                 linhas_para_atualizar = []
                 
-                # Processar as linhas
+                # PROCESSAMENTO
+                total_emails_enviar = sum(1 for linha in dados[1:] if linha[col_map[26]].strip().lower() == "enviar")
+
                 for i, linha in enumerate(dados[1:], start=2):
                     if linha[col_map[26]].strip().lower() == "enviar":
                         status = linha[col_map[24]].strip().lower()
@@ -80,8 +83,8 @@ def enviar_emails(app):
                         
                         destinatario = linha[col_map[3]]
                         
-                        if not re.match(r"[^@]+@[^@]+\.[^@]+", destinatario):
-                            messagebox.showwarning("Aviso", f"Email inválido: {destinatario}")
+                        if not re.match(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$", destinatario):
+                            messagebox.showwarning("Aviso", f"Email de {linha[col_map[1]]} - {linha[col_map[7]]} está em formato inválido ({destinatario}).")
                             continue
                         
                         emails_para_enviar.append((destinatario, mensagem, i))
@@ -92,9 +95,12 @@ def enviar_emails(app):
                 
                 assunto = f"Retorno do processo seletivo {linha[col_map[5]]}"
 
-                for email, mensagem, linha in emails_para_enviar:
-                    app.adicionar_mensagem(f"⏩ Enviando e-mail para {email}...")
-                    if enviar_email(email, assunto, mensagem):
+                quantidade = 0
+                for destinatario, mensagem, linha in emails_para_enviar:
+                    quantidade +=1
+                    app.root.after(0, app.adicionar_mensagem, f"⏩ Enviando e-mail ({quantidade}/{total_emails_enviar}). Destinatário: {destinatario}...")  
+                    
+                    if enviar_email(destinatario, assunto, mensagem):
                         linhas_para_atualizar.append(linha)
                 
                 # Atualizar planilha com "Enviado"
@@ -108,9 +114,8 @@ def enviar_emails(app):
                     ]
                     sheet.batch_update(atualizacoes)
                 
-                app.adicionar_mensagem(f"✅ Todos os emails da planilha {planilha.title} foram enviados.")
-
-                messagebox.showwarning("Aviso", f"Todos os emails da planilha {planilha.title} foram enviados.")
+                app.root.after(0, app.adicionar_mensagem, f"✅ Todos os emails da planilha {planilha.title} foram enviados.")
+                messagebox.showinfo("Aviso", f"Todos os emails da planilha {planilha.title} foram enviados.")
                 listar_arquivos_drive(app)
                 
             except Exception as e:
@@ -119,5 +124,9 @@ def enviar_emails(app):
     
     except Exception as e:
         messagebox.showwarning("Aviso", f"Erro inesperado: {e}\n Se o erro persistir, contate a UNIAE.")
-    
-    app.botao_enviar_emails.config(state="normal")
+    finally:
+        app.botao_enviar_emails.config(state="normal")
+
+def enviar_emails(app):
+    thread_envio = threading.Thread(target=tarefa_envio, args=(app,))
+    thread_envio.start()

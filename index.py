@@ -22,6 +22,7 @@ class App:
 
         self.pasta_id_drive = "1pTddHNebIu5Z77Y24xqpe1zug-GLTz8c"
         self.arquivos_planilhas =[]
+        self.arquivos = []
 
         base = os.path.abspath(sys.argv[0])
         self.caminhoExe = os.path.dirname(base)
@@ -135,8 +136,7 @@ class App:
         self.sort_descending = False
 
     def montar_lista_de_arquivos(self, arquivos=None):
-        for widget in self.canvas.winfo_children():
-            widget.destroy()
+        self.limpar_canvas()
 
         if arquivos is None:
             arquivos = self.arquivos_planilhas
@@ -241,15 +241,19 @@ class App:
             self.montar_lista_de_arquivos(arquivos=self.arquivos)
         
     def filtrar_itens(self, event=None):
-        termo = self.texto_pesquisa.get().lower()
+        if self.arquivos_planilhas:
+            termo = self.texto_pesquisa.get().lower()
 
-        arquivos_filtrados = [arq for arq in self.arquivos_planilhas if termo in arq["name"].lower()]
+            arquivos_filtrados = [arq for arq in self.arquivos_planilhas if termo in arq["name"].lower()]
 
-        self.montar_lista_de_arquivos(arquivos=arquivos_filtrados)
+            self.montar_lista_de_arquivos(arquivos=arquivos_filtrados)
 
-    def adicionar_mensagem(self, mensagem):
+    def limpar_canvas(self):
         for widget in self.canvas.winfo_children():
             widget.destroy()
+    
+    def adicionar_mensagem(self, mensagem):
+        self.limpar_canvas()
 
         label = tk.Label(self.canvas, text=mensagem,
                          font=(self.fonte, self.tamanho_fonte_corpo),
