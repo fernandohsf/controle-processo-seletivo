@@ -1,45 +1,71 @@
 import os
 from utils import arquivos_selecionados, verificar_selecao
 
+def obter_cabecalhos(sheet):
+    cabecalhos = sheet.row_values(1)
+    return {nome_coluna: idx+1 for idx, nome_coluna in enumerate(cabecalhos)}
+
+def inserir_colunas(sheet, colunas_info, cabecalhos):
+    for coluna, nome, formula_template in colunas_info:
+        if nome in cabecalhos:
+            print(f"A coluna '{nome}' já existe. Pulando inserção.")
+            continue
+
+        sheet.insert_cols([[None]], coluna)
+        sheet.update_cell(1, coluna, nome)
+        # Atualiza o dicionário para refletir a nova coluna
+        cabecalhos[nome] = coluna
+
+def atualizar_formulas(sheet, colunas_info):
+    for coluna, nome, formula_template in colunas_info:
+        if not formula_template.strip():
+            continue
+
+        coluna_letra = numero_para_letra_coluna(coluna)
+        cell_updates = []
+
+        for row in range(2, sheet.row_count + 1):
+            formula = formula_template.format(row=row)
+            cell_updates.append({
+                'range': f'{coluna_letra}{row}',
+                'values': [[formula]]
+            })
+
+        sheet.spreadsheet.values_batch_update({
+            "valueInputOption": "USER_ENTERED",
+            "data": cell_updates
+        })
+
 def ajustar_planilha(app):
     if not verificar_selecao(app):
         return
     
     arquivos = arquivos_selecionados(app)
     
+    colunas_info = [
+        (1,  'Número da Inscrição', "=SE(B{row}=\"\"; \"\"; \"PSSI\"&AD{row})"),
+        (20, 'CPF (Conferência)', r"""=TEXTO(H:H;"000\.000\.000\-00")"""),
+        (21, 'Quantidade de Inscrições neste PSSI', "=CONT.SE(T:T;T{row})"),
+        (22, 'Notas', ""),
+        (23, 'Analista RH', ""),
+        (24, 'Status da inscrição', ""),
+        (25, 'Motivo de Inaptidão/Eliminação', ""),
+        (26, 'Controle de e-mail', ""),
+        (27, 'Classificação do Candidato (Coordenador)', ""),
+        (28, 'Ranking', "=SEERRO(ORDEM(B$1:B$1000;B$1:B$1000;VERDADEIRO);\"\")"),
+        (29, 'ID Inscrição', "=SE(B{row}=\"\";\"\";(ESQUERDA(E{row};3)&(DIREITA(E{row};4)&AB{row})))"),
+        (30, 'Formatação ID', "=TEXTO(AC{row};\"000000000\")")
+    ]
+
     for arquivo_id in arquivos:
         planilha = app.cliente_gspread.open_by_key(arquivo_id)
         sheet = planilha.sheet1
 
-        def inserir_coluna_e_atualizar(coluna, nome, formula_template):
-            cell_updates = []
-            sheet.insert_cols([[None]], coluna)
-            sheet.update_cell(1, coluna, nome)
+        cabecalhos = {nome: idx+1 for idx, nome in enumerate(sheet.row_values(1))}
 
-            coluna_letra = numero_para_letra_coluna(coluna)
+        inserir_colunas(sheet, colunas_info, cabecalhos)
 
-            for row in range(2, sheet.row_count + 1):
-                formula = formula_template.format(row=row)
-                cell_updates.append({
-                    'range': f'{coluna_letra}{row}',
-                    'values': [[formula]]
-                })
-
-            sheet.batch_update(cell_updates)
-
-        # COLUNAS A, T e U
-        inserir_coluna_e_atualizar(1, 'Número da Inscrição', "=SE('Respostas ao formulário 1'!$B:$B=\"\", \"\", \"PSSI\"&AD{row})")
-        inserir_coluna_e_atualizar(20, 'CPF (Conferência)', r"""=TEXTO('Respostas ao formulário 1'!H:H;"000\.000\.000\-00")""")
-        inserir_coluna_e_atualizar(21, 'Quantidade de Inscrições neste PSSI', "=CONT.SE(T:T;T{row})")
-        inserir_coluna_e_atualizar(22, 'Notas', "")
-        inserir_coluna_e_atualizar(23, 'Analista RH', "")
-        inserir_coluna_e_atualizar(24, 'Status da inscrição', "")
-        inserir_coluna_e_atualizar(25, 'Motivo de Inaptidão/Eliminação', "")
-        inserir_coluna_e_atualizar(26, 'Controle de e-mail', "")
-        inserir_coluna_e_atualizar(27, 'Classificação do Candidato (Coordenador)', "")
-        inserir_coluna_e_atualizar(28, 'Ranking', """=SEERRO(ORDEM(B$1:B$903;B$1:B$903;VERDADEIRO);"")""")
-        inserir_coluna_e_atualizar(29, 'ID Inscrição', "=SE(B{row}=\"\";\"\";(ESQUERDA('Respostas ao formulário 1'!$E$2;3)&(DIREITA('Respostas ao formulário 1'!$E${row};4)&AB{row})))")
-        inserir_coluna_e_atualizar(30, 'Formatação ID', "=TEXTO(AC{row};\"000000000\")")
+        atualizar_formulas(sheet, colunas_info)
         
         def menu_suspenso(lista, letra_coluna):
             rule = {
@@ -123,6 +149,7 @@ def ajustar_planilha(app):
         sheet.format('Z1', {"backgroundColor": {"red": 52/255, "green": 168/255, "blue": 83/255}})  # verde
         sheet.format('AA1', {"backgroundColor": {"red": 52/255, "green": 168/255, "blue": 83/255}})  # verde
 
+        # OCULTAR COLUNAS
         sheet.spreadsheet.batch_update({
             "requests": [
                 {
@@ -130,7 +157,7 @@ def ajustar_planilha(app):
                         "range": {
                             "sheetId": sheet.id,
                             "dimension": "COLUMNS",
-                            "startIndex": 26,  # Coluna 27 (AA)
+                            "startIndex": 27,  # Coluna 27 (AA)
                             "endIndex": 30     # Coluna 31 (AE), mas o range exclui a última
                         },
                         "properties": {"hiddenByUser": True},
@@ -140,8 +167,6 @@ def ajustar_planilha(app):
             ]
         })
 
-        corrigir_formulas(sheet)
-
 def numero_para_letra_coluna(n):
     resultado = ""
     while n > 0:
@@ -149,21 +174,6 @@ def numero_para_letra_coluna(n):
         resultado = chr(65 + (n % 26)) + resultado
         n //= 26
     return resultado
-
-def corrigir_formulas(sheet):
-    all_cells = sheet.get_values()  # Obtém todas as células da planilha
-
-    updates = []
-    for row_idx, row in enumerate(all_cells, start=1):
-        for col_idx, cell in enumerate(row, start=1):
-            if isinstance(cell, str) and cell.startswith("'="):  # Verifica se a célula contém um erro
-                updates.append({
-                    "range": f"{numero_para_letra_coluna(col_idx)}{row_idx}",
-                    "values": [[cell.replace("'=", "=")]]
-                })
-    
-    if updates:
-        sheet.batch_update(updates)
         
 def abrir_planilha(app):
     arquivos = arquivos_selecionados(app)

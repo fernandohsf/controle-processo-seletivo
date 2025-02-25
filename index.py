@@ -33,7 +33,7 @@ class App:
 
         self.root = root
         self.root.title("Controle de Arquivos do Drive")
-        self.root.geometry("1000x600")
+        root.state('zoomed')
         self.root.configure(bg=self.azul_escuro)
         self.root.iconbitmap(os.path.join(self.caminhoImagens, "Nexus.ico"))
 
@@ -91,7 +91,7 @@ class App:
         self.botao_enviar_emails.image = botao_enviar_emails_normal
         self.botao_enviar_emails.bind("<Enter>", lambda e: self.botao_enviar_emails.config(image=botao_enviar_emails_ativo))
         self.botao_enviar_emails.bind("<Leave>", lambda e: self.botao_enviar_emails.config(image=botao_enviar_emails_normal))
-        self.botao_enviar_emails.pack(side=tk.RIGHT, padx=10)
+        self.botao_enviar_emails.pack(side=tk.RIGHT, padx=(41, 10))
 
         # FRAME LISTAGEM
         frame_listagem = tk.Frame(root, bg=self.azul_escuro)
@@ -152,9 +152,8 @@ class App:
         self.selecoes = []
 
         # FRAME DE LISTA DE ARQUIVOS
-        frame_lista = tk.Frame(self.canvas, bg=self.branco)
-        self.canvas.create_window((0, 0), window=frame_lista, anchor="nw")
-        frame_lista.pack(fill="both")
+        self.frame_lista = tk.Frame(self.canvas, bg=self.branco)
+        self.canvas.create_window((0, 0), window=self.frame_lista, anchor="nw", width=self.canvas.winfo_width())
 
         for idx, arquivo in enumerate(self.arquivos):
             nome = arquivo.get("name", "Desconhecido")
@@ -163,7 +162,7 @@ class App:
             data_modificacao = data_dt.strftime("%d/%m/%Y %H:%M") if data_dt != datetime.min else "Data desconhecida"
 
             # FRAME DE ITENS DA LISTA
-            frame_item = tk.Frame(frame_lista, bg=self.branco)
+            frame_item = tk.Frame(self.frame_lista, bg=self.branco)
             frame_item.pack(fill=tk.X, padx=5, pady=2)
 
             var = BooleanVar()
@@ -176,7 +175,7 @@ class App:
 
             label_nome_arquivo = tk.Label(frame_item, text=nome,
                                         font=(self.fonte, self.tamanho_fonte_corpo),
-                                        bg=self.branco, fg=self.azul_escuro, anchor="w", cursor=self.cursor,)
+                                        bg=self.branco, fg=self.azul_escuro, anchor="w")
             label_nome_arquivo.pack(side=tk.LEFT, fill=tk.X, padx=2)
 
             # BOTÃO DOWNLOAD E ABRIR PANILHA (COLOCADO EM ORDEM INVERTIDA POR ESTAR USANDO SIDE=RIGHT)
@@ -210,12 +209,11 @@ class App:
 
             # LINHA DE SEPARAÇÃO
             if idx < len(self.arquivos_planilhas) - 1:
-                linha = tk.Frame(frame_lista, bg=self.azul_escuro, height=1)
+                linha = tk.Frame(self.frame_lista, bg=self.azul_escuro, height=1)
                 linha.pack(fill=tk.X, pady=2)
 
-        frame_lista.bind("<Configure>", self.atualizar_scroll)
-        frame_lista.bind_all("<MouseWheel>", self.rolar_com_bolinha)
-        self.canvas.update_idletasks()
+        self.frame_lista.bind("<Configure>", self.atualizar_scroll)
+        self.frame_lista.bind_all("<MouseWheel>", self.rolar_com_bolinha)
 
     def sort_by(self, coluna):
         if self.arquivos:
@@ -266,7 +264,7 @@ class App:
     def centralizar_pesquisa(self):
         largura_frame = self.frame_botoes.winfo_width()
         largura_entry = 180
-        pos_x = (largura_frame - largura_entry) // 2  # POSICIONAMENTO CENTRAL
+        pos_x = (largura_frame - largura_entry - 35) // 2  # POSICIONAMENTO CENTRAL
 
         self.texto_pesquisa.place(x=pos_x, y=13, width=largura_entry, height=30)
 

@@ -10,7 +10,7 @@ def conectar_drive(app):
         app.adicionar_mensagem("❌ Erro ao autenticar no Google Drive.")
         app.botao_conectar.config(state="normal")
     else:
-        app.adicionar_mensagem("✅ Conectado ao Google Drive com sucesso!")
+        app.adicionar_mensagem("✅ Conectado ao Google Drive com sucesso! Carregando lista...")
         listar_arquivos_drive(app)
         app.botao_enviar_emails.config(state="normal")
 
