@@ -8,7 +8,6 @@ def obter_cabecalhos(sheet):
 def inserir_colunas(sheet, colunas_info, cabecalhos):
     for coluna, nome, formula_template in colunas_info:
         if nome in cabecalhos:
-            print(f"A coluna '{nome}' já existe. Pulando inserção.")
             continue
 
         sheet.insert_cols([[None]], coluna)
