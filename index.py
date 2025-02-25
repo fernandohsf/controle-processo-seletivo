@@ -2,11 +2,13 @@ import os
 import sys
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
+from tkinter import BooleanVar
 from datetime import datetime
 from PIL import Image, ImageTk
 from google_drive import conectar_drive
 from emails import enviar_emails
-from google_sheets import ajustar_planilha
+from google_sheets import abrir_planilha, ajustar_planilha, baixar_planilha
 
 class App:
     def __init__(self, root):
@@ -147,10 +149,12 @@ class App:
             return
 
         self.arquivos = arquivos
+        self.selecoes = []
 
         # FRAME DE LISTA DE ARQUIVOS
         frame_lista = tk.Frame(self.canvas, bg=self.branco)
         self.canvas.create_window((0, 0), window=frame_lista, anchor="nw")
+        frame_lista.pack(fill="both")
 
         for idx, arquivo in enumerate(self.arquivos):
             nome = arquivo.get("name", "Desconhecido")
@@ -158,65 +162,47 @@ class App:
             data_dt = arquivo.get("modification_date", datetime.min)
             data_modificacao = data_dt.strftime("%d/%m/%Y %H:%M") if data_dt != datetime.min else "Data desconhecida"
 
-            # GARANTIR QUE A SELEÇÃO DO CHECKBOX SEJA CORRETA
-            var = tk.BooleanVar()
-            def atualizar_lista_selecionados(arquivo_id=arquivo_id, var=var):
-                if var.get():
-                    if arquivo_id not in self.arquivos_selecionados:
-                        self.arquivos_selecionados.append(arquivo_id)
-                else:
-                    if arquivo_id in self.arquivos_selecionados:
-                        self.arquivos_selecionados.remove(arquivo_id)
-
-            def abrir_planilha(arquivo_id=arquivo_id):
-                url = f"https://docs.google.com/spreadsheets/d/{arquivo_id}"
-                os.system('start "" "{}"'.format(url))
-            
-            def donwload_planilha(arquivo_id=arquivo_id):
-                url = f"https://docs.google.com/spreadsheets/d/{arquivo_id}/export?format=xlsx"
-                os.system('start "" "{}"'.format(url))
-
             # FRAME DE ITENS DA LISTA
             frame_item = tk.Frame(frame_lista, bg=self.branco)
             frame_item.pack(fill=tk.X, padx=5, pady=2)
 
+            var = BooleanVar()
+            self.selecoes.append((var, arquivo_id))
+
             tk.Checkbutton(frame_item, variable=var,
                            bg=self.branco, fg=self.azul_escuro,
                            activebackground=self.branco, selectcolor=self.branco,
-                           width=self.larguras[0], cursor=self.cursor,
-                           command=lambda arquivo_id=arquivo_id, var=var: atualizar_lista_selecionados(arquivo_id, var)).pack(side=tk.LEFT)
+                           width=self.larguras[0], cursor=self.cursor).pack(side=tk.LEFT)
 
             label_nome_arquivo = tk.Label(frame_item, text=nome,
                                         font=(self.fonte, self.tamanho_fonte_corpo),
                                         bg=self.branco, fg=self.azul_escuro, anchor="w", cursor=self.cursor,)
             label_nome_arquivo.pack(side=tk.LEFT, fill=tk.X, padx=2)
-            label_nome_arquivo.bind("<Button-1>", lambda event, var=var: (var.set(not var.get()),atualizar_lista_selecionados(arquivo_id, var)))
 
             # BOTÃO DOWNLOAD E ABRIR PANILHA (COLOCADO EM ORDEM INVERTIDA POR ESTAR USANDO SIDE=RIGHT)
             botao_gpsi_img = Image.open(f'{self.caminhoImagens}/botao_gpsi_normal.png').resize((48, 27))
             botao_gpsi_img = ImageTk.PhotoImage(botao_gpsi_img)
             botao_gpsi = tk.Button(frame_item, image=botao_gpsi_img,
                                     bg=self.branco, bd=0, activebackground=self.branco,
-                                    command=lambda arquivo_id=arquivo_id: ajustar_planilha(self, arquivo_id), cursor=self.cursor)
+                                    command=lambda: ajustar_planilha(self), cursor=self.cursor)
             botao_gpsi.image = botao_gpsi_img
             botao_gpsi.pack(side=tk.RIGHT)
-
 
             botao_download_img = Image.open(f'{self.caminhoImagens}/download.png').resize((26, 26))
             botao_download_img = ImageTk.PhotoImage(botao_download_img)
             botao_download = tk.Button(frame_item, image=botao_download_img,
                                     bg=self.branco, bd=0, activebackground=self.branco,
-                                    command=lambda arquivo_id=arquivo_id: donwload_planilha(arquivo_id), cursor=self.cursor)
+                                    command=lambda: baixar_planilha(self), cursor=self.cursor)
             botao_download.image = botao_download_img
-            botao_download.pack(side=tk.RIGHT, padx=(0, 25))
+            botao_download.pack(side=tk.RIGHT, padx=(0, 45))
 
             botao_abrir_img = Image.open(f'{self.caminhoImagens}/abrir.png').resize((39, 26))
             botao_abrir_img = ImageTk.PhotoImage(botao_abrir_img)
             botao_abrir = tk.Button(frame_item, image=botao_abrir_img,
                                     bg=self.branco, bd=0, activebackground=self.branco,
-                                    command=lambda arquivo_id=arquivo_id: abrir_planilha(arquivo_id), cursor=self.cursor)
+                                    command=lambda: abrir_planilha(self), cursor=self.cursor)
             botao_abrir.image = botao_abrir_img
-            botao_abrir.pack(side=tk.RIGHT, padx=(0, 48))
+            botao_abrir.pack(side=tk.RIGHT, padx=(0, 50))
 
             tk.Label(frame_item, text=data_modificacao,
                     font=(self.fonte, self.tamanho_fonte_corpo),

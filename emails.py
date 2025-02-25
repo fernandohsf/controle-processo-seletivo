@@ -9,6 +9,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from google_drive import listar_arquivos_drive
 from mensagens import mensagens
+from utils import arquivos_selecionados, verificar_selecao
 
 def enviar_email(destinatario, assunto, corpo):
     base = os.path.abspath(sys.argv[0])
@@ -35,11 +36,10 @@ def enviar_email(destinatario, assunto, corpo):
         return False
 
 def tarefa_envio(app):
-    ids_arquivos_selecionados = list(app.arquivos_selecionados)
-    
-    if not ids_arquivos_selecionados:
-        messagebox.showwarning("Aviso", "Nenhuma planilha selecionada.")
+    if not verificar_selecao(app):
         return
+
+    ids_arquivos_selecionados = arquivos_selecionados(app)
     
     try:
         app.botao_enviar_emails.config(state="disabled")
