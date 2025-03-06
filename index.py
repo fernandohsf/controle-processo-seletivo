@@ -152,8 +152,14 @@ class App:
         self.selecoes = []
 
         # FRAME DE LISTA DE ARQUIVOS
-        self.frame_lista = tk.Frame(self.canvas, bg=self.branco)
-        self.canvas.create_window((0, 0), window=self.frame_lista, anchor="nw", width=self.canvas.winfo_width())
+        frame_lista = tk.Frame(self.canvas, bg=self.branco)
+        frame_lista_id = self.canvas.create_window((0, 0), window=frame_lista, anchor="nw", width=self.canvas.winfo_width())
+
+        # CALLBACK PARA RESPONSIVIDADE DO FRAME_LISTA
+        def on_canvas_configure(event):
+            self.canvas.itemconfig(frame_lista_id, width=event.width)
+
+        self.canvas.bind("<Configure>", on_canvas_configure)
 
         for idx, arquivo in enumerate(self.arquivos):
             nome = arquivo.get("name", "Desconhecido")
@@ -162,7 +168,7 @@ class App:
             data_modificacao = data_dt.strftime("%d/%m/%Y %H:%M") if data_dt != datetime.min else "Data desconhecida"
 
             # FRAME DE ITENS DA LISTA
-            frame_item = tk.Frame(self.frame_lista, bg=self.branco)
+            frame_item = tk.Frame(frame_lista, bg=self.branco)
             frame_item.pack(fill=tk.X, padx=5, pady=2)
 
             var = BooleanVar()
@@ -209,11 +215,11 @@ class App:
 
             # LINHA DE SEPARAÇÃO
             if idx < len(self.arquivos_planilhas) - 1:
-                linha = tk.Frame(self.frame_lista, bg=self.azul_escuro, height=1)
+                linha = tk.Frame(frame_lista, bg=self.azul_escuro, height=1)
                 linha.pack(fill=tk.X, pady=2)
 
-        self.frame_lista.bind("<Configure>", self.atualizar_scroll)
-        self.frame_lista.bind_all("<MouseWheel>", self.rolar_com_bolinha)
+        frame_lista.bind("<Configure>", self.atualizar_scroll)
+        frame_lista.bind_all("<MouseWheel>", self.rolar_com_bolinha)
 
     def sort_by(self, coluna):
         if self.arquivos:
@@ -259,7 +265,7 @@ class App:
                          font=(self.fonte, self.tamanho_fonte_corpo),
                          bg=self.branco, fg=self.azul_escuro)
         label.pack(pady=2)
-        self.root.update_idletasks()
+        self.canvas.update_idletasks()
 
     def centralizar_pesquisa(self):
         largura_frame = self.frame_botoes.winfo_width()
