@@ -2,6 +2,7 @@ from datetime import datetime
 from google_connection import autenticar_google_API
 
 def conectar_drive(app):
+    app.limpar_canvas()
     app.botao_conectar.config(state="disabled")
     app.adicionar_mensagem("🔃 Conectando ao Google Drive...")
     app.service_drive, app.cliente_gspread = autenticar_google_API()

@@ -1,8 +1,6 @@
-import os
-import sys
+import os, sys, threading
 import tkinter as tk
 from tkinter import ttk
-from tkinter import messagebox
 from tkinter import BooleanVar
 from datetime import datetime
 from PIL import Image, ImageTk
@@ -23,7 +21,11 @@ class App:
         # LARGURAS COLUNAS: SELECIONAR, NOME, DATA, ABRIR, DOWNLOAD, GPSI
         self.larguras = [10, 40, 18, 6, 8, 6]
 
-        self.pasta_id_drive = "1pTddHNebIu5Z77Y24xqpe1zug-GLTz8c"
+        # PRODUÇÃO
+        #self.pasta_id_drive = "1pTddHNebIu5Z77Y24xqpe1zug-GLTz8c"
+        # HOMOLOGAÇÃO
+        self.pasta_id_drive = "1-z691tcQJdDU8wIwxQpYL151Ep3uEHoU"
+
         self.arquivos_planilhas =[]
         self.arquivos = []
 
@@ -33,7 +35,7 @@ class App:
 
         self.root = root
         self.root.title("Controle de Arquivos do Drive")
-        root.state('zoomed')
+        #root.state('zoomed')
         self.root.configure(bg=self.azul_escuro)
         self.root.iconbitmap(os.path.join(self.caminhoImagens, "Nexus.ico"))
 

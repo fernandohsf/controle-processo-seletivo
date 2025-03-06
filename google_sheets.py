@@ -1,5 +1,5 @@
-import os
-from utils import arquivos_selecionados, verificar_selecao
+import os, threading, time
+from utils import arquivos_selecionados, criar_barra_progresso, verificar_selecao
 
 def obter_cabecalhos(sheet):
     cabecalhos = sheet.row_values(1)
@@ -35,11 +35,10 @@ def atualizar_formulas(sheet, colunas_info):
             "data": cell_updates
         })
 
-def ajustar_planilha(app):
-    if not verificar_selecao(app):
-        return
-    
+def executar_ajuste_planilha(app):    
     arquivos = arquivos_selecionados(app)
+
+    app.progress["maximum"] = len(arquivos)+1
     
     colunas_info = [
         (1,  'Número da Inscrição', "=SE(B{row}=\"\"; \"\"; \"PSSI\"&AD{row})"),
@@ -56,7 +55,9 @@ def ajustar_planilha(app):
         (30, 'Formatação ID', "=TEXTO(AC{row};\"000000000\")")
     ]
 
-    for arquivo_id in arquivos:
+    for i, arquivo_id in enumerate(arquivos):
+        app.progress["value"] = i + 1  # Atualiza o progresso
+        app.canvas.update_idletasks()
         planilha = app.cliente_gspread.open_by_key(arquivo_id)
         sheet = planilha.sheet1
 
@@ -165,6 +166,11 @@ def ajustar_planilha(app):
                 }
             ]
         })
+    app.progress["value"] = len(arquivos) +1 # Completa a barra
+    app.label_barra_progresso.config(text="Concluído!")
+    time.sleep(1)
+    app.montar_lista_de_arquivos()
+    app.botao_enviar_emails.config(state="normal")
 
 def numero_para_letra_coluna(n):
     resultado = ""
@@ -189,3 +195,13 @@ def baixar_planilha(app):
     for arquivo_id in arquivos:
         url = f"https://docs.google.com/spreadsheets/d/{arquivo_id}/export?format=xlsx"
         os.system(f'start "" "{url}"')
+
+def ajustar_planilha(app):
+    if not verificar_selecao(app):
+        return
+    
+    app.botao_enviar_emails.config(state="disabled")
+    criar_barra_progresso(app)
+
+    thread = threading.Thread(target=executar_ajuste_planilha, args=(app,))
+    thread.start()
