@@ -1,7 +1,6 @@
-import os, sys, threading
+import os, sys
 import tkinter as tk
-from tkinter import ttk
-from tkinter import BooleanVar
+from tkinter import ttk, BooleanVar
 from datetime import datetime
 from PIL import Image, ImageTk
 from google_drive import conectar_drive

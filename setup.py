@@ -5,7 +5,7 @@ caminhoExe = os.path.dirname(os.path.realpath(__file__))
 
 build_exe_options = {
     "packages": [
-        "os", "sys", "re", "gspread", "googleapiclient", "smtplib", "ssl", "tkinter", "PIL", "email", "dotenv", "webbrowser", "threading"
+        "os", "sys", "re", "gspread", "googleapiclient", "smtplib", "ssl", "tkinter", "PIL", "email", "dotenv", "webbrowser", "threading", "time"
     ],
     "include_files": [
         f"{caminhoExe}/imagens",
