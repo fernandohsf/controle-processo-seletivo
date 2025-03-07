@@ -13,17 +13,14 @@ class App:
         self.azul_escuro = "#203464"
         self.azul_claro = "#04acec"
         self.branco = "white"
+        self.cinza_claro = "#CCCCCC"
         self.fonte = "Arial"
         self.tamanho_fonte_cabecalho = 13
         self.tamanho_fonte_corpo = 11
         self.cursor = "hand2"
-        # LARGURAS COLUNAS: SELECIONAR, NOME, DATA, ABRIR, DOWNLOAD, GPSI
-        self.larguras = [10, 40, 18, 6, 8, 6]
 
-        # PRODUÇÃO
-        #self.pasta_id_drive = "1pTddHNebIu5Z77Y24xqpe1zug-GLTz8c"
-        # HOMOLOGAÇÃO
-        self.pasta_id_drive = "1-z691tcQJdDU8wIwxQpYL151Ep3uEHoU"
+        self.pasta_id_drive = "1pTddHNebIu5Z77Y24xqpe1zug-GLTz8c" # PRODUÇÃO
+        #self.pasta_id_drive = "1-z691tcQJdDU8wIwxQpYL151Ep3uEHoU"  # HOMOLOGAÇÃO
 
         self.arquivos_planilhas =[]
         self.arquivos = []
@@ -34,7 +31,7 @@ class App:
 
         self.root = root
         self.root.title("Controle de Arquivos do Drive")
-        #root.state('zoomed')
+        root.state('zoomed')
         self.root.configure(bg=self.azul_escuro)
         self.root.iconbitmap(os.path.join(self.caminhoImagens, "Nexus.ico"))
 
@@ -103,24 +100,24 @@ class App:
         self.frame_cabecalho.pack(fill=tk.X)
 
         tk.Label(self.frame_cabecalho, text="Selecionar", font=(self.fonte, self.tamanho_fonte_cabecalho, "bold"),
-                bg=self.azul_claro, fg=self.branco, width=self.larguras[0], anchor="w").pack(side=tk.LEFT)
+                bg=self.azul_claro, fg=self.branco, width=9, anchor="w").pack(side=tk.LEFT)
 
         self.label_nome = tk.Label(self.frame_cabecalho, text="Nome do Arquivo", font=(self.fonte, self.tamanho_fonte_cabecalho, "bold"),
                                     bg=self.azul_claro, fg=self.branco, anchor="w", cursor=self.cursor)
-        self.label_nome.pack(side=tk.LEFT, fill="x")
+        self.label_nome.pack(side=tk.LEFT, fill=tk.X)
         self.label_nome.bind("<Button-1>", lambda e: self.sort_by("nome"))
 
         tk.Label(self.frame_cabecalho, text="GPSI", font=(self.fonte, self.tamanho_fonte_cabecalho, "bold"),
-                bg=self.azul_claro, fg=self.branco, width=self.larguras[5], anchor="w").pack(side=tk.RIGHT, padx=(0, 5))
+                bg=self.azul_claro, fg=self.branco, width=6, anchor="w").pack(side=tk.RIGHT, padx=(0, 5))
 
         tk.Label(self.frame_cabecalho, text="Download", font=(self.fonte, self.tamanho_fonte_cabecalho, "bold"),
-                bg=self.azul_claro, fg=self.branco, width=self.larguras[4], anchor="w").pack(side=tk.RIGHT, padx=(0,15))
+                bg=self.azul_claro, fg=self.branco, width=8, anchor="w").pack(side=tk.RIGHT, padx=(0,15))
 
         tk.Label(self.frame_cabecalho, text="Abrir", font=(self.fonte, self.tamanho_fonte_cabecalho, "bold"),
-                bg=self.azul_claro, fg=self.branco, width=self.larguras[3], anchor="w").pack(side=tk.RIGHT)
+                bg=self.azul_claro, fg=self.branco, width=6, anchor="w").pack(side=tk.RIGHT)
         
         self.label_data = tk.Label(self.frame_cabecalho, text="Data de modificação", font=(self.fonte, self.tamanho_fonte_cabecalho, "bold"),
-                                    bg=self.azul_claro, fg=self.branco, width=self.larguras[2], anchor="w", cursor=self.cursor)
+                                    bg=self.azul_claro, fg=self.branco, width=18, anchor="w", cursor=self.cursor)
         self.label_data.pack(side=tk.RIGHT)
         self.label_data.bind("<Button-1>", lambda e: self.sort_by("data"))
 
@@ -168,56 +165,78 @@ class App:
             data_dt = arquivo.get("modification_date", datetime.min)
             data_modificacao = data_dt.strftime("%d/%m/%Y %H:%M") if data_dt != datetime.min else "Data desconhecida"
 
+            # COR DAS LINHAS
+            cor_fundo = self.cinza_claro if idx % 2 == 0 else self.branco
+
             # FRAME DE ITENS DA LISTA
-            frame_item = tk.Frame(frame_lista, bg=self.branco)
-            frame_item.pack(fill=tk.X, padx=5, pady=2)
+            frame_item = tk.Frame(frame_lista, bg=cor_fundo)
+            frame_item.pack(fill=tk.X)
+
+            # FUNÇÃO HOVER PARA LINHA
+            def on_enter(event, widget=frame_item):
+                widget.config(bg=self.azul_claro)
+                for filho in widget.winfo_children():
+                    filho.config(bg=self.azul_claro)
+                    if isinstance(filho, (tk.Label)):
+                        filho.config(fg=self.branco)
+
+            def on_leave(event, widget=frame_item, cor_padrao=cor_fundo):
+                widget.config(bg=cor_padrao)
+                for filho in widget.winfo_children():
+                    filho.config(bg=cor_padrao)
+                    if isinstance(filho, (tk.Label)):
+                        filho.config(fg="#000000")
+
+            frame_item.bind("<Enter>", on_enter)
+            frame_item.bind("<Leave>", on_leave)
 
             var = BooleanVar()
             self.selecoes.append((var, arquivo_id))
 
-            tk.Checkbutton(frame_item, variable=var,
-                           bg=self.branco, fg=self.azul_escuro,
-                           activebackground=self.branco, selectcolor=self.branco,
-                           width=self.larguras[0], cursor=self.cursor).pack(side=tk.LEFT)
+            check = tk.Checkbutton(frame_item, variable=var,
+                           bg=cor_fundo, fg=self.azul_escuro,
+                           activebackground=self.azul_claro, selectcolor=self.branco,
+                           width=10, cursor=self.cursor)
+            check.pack(side=tk.LEFT)
 
             label_nome_arquivo = tk.Label(frame_item, text=nome,
                                         font=(self.fonte, self.tamanho_fonte_corpo),
-                                        bg=self.branco, fg=self.azul_escuro, anchor="w")
-            label_nome_arquivo.pack(side=tk.LEFT, fill=tk.X, padx=2)
+                                        bg=cor_fundo, fg=self.azul_escuro, anchor="w")
+            label_nome_arquivo.pack(side=tk.LEFT, fill=tk.X)
 
             # BOTÃO DOWNLOAD E ABRIR PANILHA (COLOCADO EM ORDEM INVERTIDA POR ESTAR USANDO SIDE=RIGHT)
-            botao_gpsi_img = Image.open(f'{self.caminhoImagens}/botao_gpsi_normal.png').resize((48, 27))
+            botao_gpsi_img = Image.open(f'{self.caminhoImagens}/botao_gpsi.png').resize((48, 27))
             botao_gpsi_img = ImageTk.PhotoImage(botao_gpsi_img)
-            botao_gpsi = tk.Button(frame_item, image=botao_gpsi_img,
-                                    bg=self.branco, bd=0, activebackground=self.branco,
+            botao_gpsi = tk.Button(frame_item, image=botao_gpsi_img, width=58,
+                                    bg=cor_fundo, bd=0, activebackground=self.azul_claro,
                                     command=lambda: ajustar_planilha(self), cursor=self.cursor)
             botao_gpsi.image = botao_gpsi_img
             botao_gpsi.pack(side=tk.RIGHT)
 
             botao_download_img = Image.open(f'{self.caminhoImagens}/download.png').resize((26, 26))
             botao_download_img = ImageTk.PhotoImage(botao_download_img)
-            botao_download = tk.Button(frame_item, image=botao_download_img,
-                                    bg=self.branco, bd=0, activebackground=self.branco,
+            botao_download = tk.Button(frame_item, image=botao_download_img, width=100,
+                                    bg=cor_fundo, bd=0, activebackground=self.azul_claro,
                                     command=lambda: baixar_planilha(self), cursor=self.cursor)
             botao_download.image = botao_download_img
-            botao_download.pack(side=tk.RIGHT, padx=(0, 45))
+            botao_download.pack(side=tk.RIGHT)
 
             botao_abrir_img = Image.open(f'{self.caminhoImagens}/abrir.png').resize((39, 26))
             botao_abrir_img = ImageTk.PhotoImage(botao_abrir_img)
-            botao_abrir = tk.Button(frame_item, image=botao_abrir_img,
-                                    bg=self.branco, bd=0, activebackground=self.branco,
+            botao_abrir = tk.Button(frame_item, image=botao_abrir_img, width=72,
+                                    bg=cor_fundo, bd=0, activebackground=self.azul_claro,
                                     command=lambda: abrir_planilha(self), cursor=self.cursor)
             botao_abrir.image = botao_abrir_img
-            botao_abrir.pack(side=tk.RIGHT, padx=(0, 50))
+            botao_abrir.pack(side=tk.RIGHT)
 
-            tk.Label(frame_item, text=data_modificacao,
+            label_data_modificacao = tk.Label(frame_item, text=data_modificacao,
                     font=(self.fonte, self.tamanho_fonte_corpo),
-                    bg=self.branco, fg=self.azul_escuro, width=self.larguras[2], anchor="w").pack(side=tk.RIGHT, padx=(0, 20))
-
-            # LINHA DE SEPARAÇÃO
-            if idx < len(self.arquivos_planilhas) - 1:
-                linha = tk.Frame(frame_lista, bg=self.azul_escuro, height=1)
-                linha.pack(fill=tk.X, pady=2)
+                    bg=cor_fundo, fg=self.azul_escuro, width=18, anchor="w")
+            label_data_modificacao.pack(side=tk.RIGHT)
+            
+            for widget in [check, label_nome_arquivo, botao_gpsi, botao_download, botao_abrir, label_data_modificacao]:
+                widget.bind("<Enter>", on_enter)
+                widget.bind("<Leave>", on_leave)
 
         frame_lista.bind("<Configure>", self.atualizar_scroll)
         frame_lista.bind_all("<MouseWheel>", self.rolar_com_bolinha)
