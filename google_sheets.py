@@ -171,6 +171,7 @@ def executar_ajuste_planilha(app):
     time.sleep(1)
     app.montar_lista_de_arquivos()
     app.botao_enviar_emails.config(state="normal")
+    app.texto_pesquisa.config(state="normal")
 
 def numero_para_letra_coluna(n):
     resultado = ""
@@ -201,6 +202,7 @@ def ajustar_planilha(app):
         return
     
     app.botao_enviar_emails.config(state="disabled")
+    app.texto_pesquisa.config(state="disabled")
     criar_barra_progresso(app)
 
     thread = threading.Thread(target=executar_ajuste_planilha, args=(app,))
